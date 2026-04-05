@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>溯答挑战 - 脑力锻炼</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f5f0;
+            --card: #ffffff;
+            --text: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: #e0e0e0;
+            --primary: #4a90a4;
+            --primary-light: #e8f4f8;
+            --success: #5a9e6f;
+            --success-light: #e8f5eb;
+            --danger: #c75a5a;
+            --danger-light: #f8e8e8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Menu */
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .difficulty-input-row {
+            margin-bottom: 20px;
+        }
+
+        .difficulty-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            font-family: inherit;
+            background: var(--bg);
+        }
+
+        .difficulty-input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .btn:hover {
+            background: #3d7a8a;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* Game Header */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            font-size: 12px;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-weight: 500;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer.warning {
+            color: var(--danger);
+        }
+
+        /* Question Area */
+        .question-area {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .question-top {
+            padding: 16px 12px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .current-question {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 2px;
+        }
+
+        .current-question .num {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+
+        /* Answer Area */
+        .answer-area {
+            padding: 16px 12px;
+        }
+
+        .answer-masked {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+            letter-spacing: 2px;
+            min-height: 36px;
+        }
+
+        #answer-num {
+            color: var(--primary);
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .placeholder {
+            font-size: 14px;
+            vertical-align: middle;
+            color: var(--text-muted);
+        }
+
+        .op {
+            font-size: 14px;
+            vertical-align: middle;
+            color: var(--text-muted);
+        }
+
+        .revealed {
+            color: var(--success);
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 18px;
+            font-size: 32px;
+            font-weight: 600;
+            text-align: center;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            font-family: inherit;
+            background: white;
+            touch-action: manipulation;
+        }
+
+        .answer-input:focus {
+            border-color: var(--primary);
+        }
+
+        .submit-btn {
+            margin-top: 12px;
+        }
+
+        /* Feedback */
+        .feedback {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.2s;
+            margin-top: 12px;
+        }
+
+        .feedback.show {
+            opacity: 1;
+        }
+
+        .feedback.correct {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .feedback.wrong {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* Result */
+        .result-icon {
+            text-align: center;
+            font-size: 56px;
+            margin-bottom: 8px;
+        }
+
+        .result-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .stats {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .stat-value.highlight {
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 360px) {
+            body {
+                padding: 8px;
+            }
+
+            .card {
+                padding: 16px 12px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .current-question {
+                font-size: 20px;
+            }
+
+            .answer-masked {
+                font-size: 20px;
+            }
+
+            .answer-input {
+                font-size: 28px;
+                padding: 16px;
+            }
+        }
+
+        /* iPhone SE and smaller */
+        @media (max-width: 330px) {
+            .current-question {
+                font-size: 18px;
+                letter-spacing: 1px;
+            }
+
+            .answer-masked {
+                font-size: 18px;
+            }
+
+            .answer-input {
+                font-size: 24px;
+                padding: 14px;
+            }
+        }
+
+        /* Landscape mode on mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 5px;
+            }
+
+            .card {
+                padding: 12px;
+            }
+
+            .question-top {
+                padding: 10px;
+                min-height: 45px;
+            }
+
+            .current-question {
+                font-size: 18px;
+            }
+
+            .answer-area {
+                padding: 10px;
+            }
+
+            .answer-masked {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .answer-input {
+                font-size: 24px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Menu Screen -->
+        <div id="menu-screen" class="screen active">
+            <div class="card">
+                <h1>溯答挑战</h1>
+                <p class="subtitle">记住答案，回答过去</p>
+
+                <div class="section-label">输入溯答题数（1-99）</div>
+                <div class="difficulty-input-row">
+                    <input type="number" class="difficulty-input" id="difficulty-input" value="3" min="1" max="99" inputmode="numeric">
+                </div>
+
+                <button class="btn" id="start-btn">开始挑战</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="card">
+                <div class="game-header">
+                    <span class="badge" id="difficulty-badge">15 溯答</span>
+                    <span class="timer" id="timer-display">2:00</span>
+                </div>
+
+                <div class="question-area">
+                    <div class="question-top">
+                        <div class="current-question" id="current-question"></div>
+                    </div>
+                    <div class="answer-area">
+                        <div class="answer-masked" id="answer-masked">
+                            <span id="answer-num"></span>
+                            <span class="placeholder">? ? ? = ?</span>
+                        </div>
+                        <input type="number" class="answer-input" id="answer-input" placeholder="?" inputmode="numeric" autocomplete="off">
+                        <button class="btn submit-btn" id="submit-btn">确定</button>
+                        <div class="feedback" id="feedback"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <div class="card">
+                <div class="result-icon" id="result-icon">🎉</div>
+                <h2 class="result-title" id="result-title">时间到！</h2>
+
+                <div class="stats">
+                    <div class="stat-row">
+                        <span class="stat-label">难度</span>
+                        <span class="stat-value" id="result-difficulty">-</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">总题数</span>
+                        <span class="stat-value" id="result-total">-</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">答题数</span>
+                        <span class="stat-value" id="result-answered">-</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">答对</span>
+                        <span class="stat-value" id="result-correct">-</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">得分</span>
+                        <span class="stat-value highlight" id="result-score">-</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn" id="play-again-btn">再来一次</button>
+                    <button class="btn btn-secondary" id="back-btn">返回</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAME_DURATION = 120;
+        const MEMORY_DISPLAY_TIME = 2000;
+        const OPERATORS = ['+', '-'];
+
+        const state = {
+            difficulty: 15,
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            correctCount: 0,
+            answeredCount: 0,
+            isWaiting: false,
+            isGameActive: false,
+            timeRemaining: GAME_DURATION,
+            timerInterval: null,
+            displayTimeout: null
+        };
+
+        const screens = {
+            menu: document.getElementById('menu-screen'),
+            game: document.getElementById('game-screen'),
+            result: document.getElementById('result-screen')
+        };
+
+        const elements = {
+            difficultyInput: document.getElementById('difficulty-input'),
+            startBtn: document.getElementById('start-btn'),
+            difficultyBadge: document.getElementById('difficulty-badge'),
+            timerDisplay: document.getElementById('timer-display'),
+            currentQuestion: document.getElementById('current-question'),
+            answerMasked: document.getElementById('answer-masked'),
+            answerInput: document.getElementById('answer-input'),
+            submitBtn: document.getElementById('submit-btn'),
+            feedback: document.getElementById('feedback'),
+            resultIcon: document.getElementById('result-icon'),
+            resultTitle: document.getElementById('result-title'),
+            resultDifficulty: document.getElementById('result-difficulty'),
+            resultTotal: document.getElementById('result-total'),
+            resultAnswered: document.getElementById('result-answered'),
+            resultCorrect: document.getElementById('result-correct'),
+            resultScore: document.getElementById('result-score'),
+            playAgainBtn: document.getElementById('play-again-btn'),
+            backBtn: document.getElementById('back-btn')
+        };
+
+        function generateQuestion() {
+            const operator = OPERATORS[Math.floor(Math.random() * OPERATORS.length)];
+            let a, b, answer;
+            switch (operator) {
+                case '+':
+                    answer = Math.floor(Math.random() * 10);
+                    a = Math.floor(Math.random() * (answer + 1));
+                    b = answer - a;
+                    break;
+                case '-':
+                    answer = Math.floor(Math.random() * 10);
+                    a = answer + Math.floor(Math.random() * (10 - answer));
+                    b = a - answer;
+                    break;
+            }
+            return { question: `${a} ${operator} ${b}`, answer };
+        }
+
+        function switchScreen(name) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[name].classList.add('active');
+        }
+
+        function formatTime(s) {
+            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            state.timerInterval = setInterval(() => {
+                state.timeRemaining--;
+                elements.timerDisplay.textContent = formatTime(state.timeRemaining);
+                elements.timerDisplay.classList.toggle('warning', state.timeRemaining <= 30);
+                if (state.timeRemaining <= 0) endGame();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(state.timerInterval);
+        }
+
+        function stopDisplayTimeout() {
+            clearTimeout(state.displayTimeout);
+        }
+
+        function showFeedback(isCorrect, correctAnswer) {
+            elements.feedback.textContent = isCorrect ? '✓ 正确！' : `✗ 正确答案是 ${correctAnswer}`;
+            elements.feedback.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+        }
+
+        function renderCurrentQuestion() {
+            const { questions, currentIndex } = state;
+            if (currentIndex < 0 || currentIndex >= questions.length) return;
+            elements.currentQuestion.innerHTML = `<span class="num">${currentIndex + 1}:</span>${questions[currentIndex].question} = ?`;
+        }
+
+        function updateAnswerArea(showAnswer = false) {
+            const { currentIndex, difficulty } = state;
+
+            if (!showAnswer) {
+                elements.answerMasked.innerHTML = '<span id="answer-num"></span><span class="placeholder">? ? ? = ?</span>';
+                elements.answerInput.style.display = 'none';
+                elements.submitBtn.style.display = 'none';
+                return;
+            }
+
+            const targetIdx = currentIndex - difficulty;
+            elements.answerMasked.innerHTML = `<span id="answer-num">${targetIdx + 1}:</span><span class="placeholder">? ? ? = ?</span>`;
+            elements.answerInput.style.display = 'block';
+            elements.submitBtn.style.display = 'block';
+            elements.answerInput.value = '';
+            elements.answerInput.focus();
+        }
+
+        function revealAnswer() {
+            const { questions, currentIndex, difficulty } = state;
+            const targetIdx = currentIndex - difficulty;
+            const targetQ = questions[targetIdx];
+            const [a, op, b] = targetQ.question.split(' ');
+            elements.answerMasked.innerHTML = `<span id="answer-num">${targetIdx + 1}:</span>${a} <span class="op">${op}</span> ${b} = <span class="revealed">${targetQ.answer}</span>`;
+        }
+
+        function displayNextQuestion() {
+            const { currentIndex, difficulty } = state;
+
+            state.currentIndex++;
+            state.questions.push(generateQuestion());
+            state.isWaiting = true;
+
+            renderCurrentQuestion();
+
+            if (state.currentIndex >= difficulty) {
+                updateAnswerArea(true);
+            } else {
+                updateAnswerArea(false);
+                state.displayTimeout = setTimeout(() => {
+                    if (state.isGameActive) displayNextQuestion();
+                }, MEMORY_DISPLAY_TIME);
+            }
+        }
+
+        function handleSubmit() {
+            if (!state.isGameActive || !state.isWaiting) return;
+
+            const userAnswer = parseInt(elements.answerInput.value);
+            if (isNaN(userAnswer)) {
+                elements.answerInput.focus();
+                return;
+            }
+
+            state.answeredCount++;
+
+            const targetIdx = state.currentIndex - state.difficulty;
+            const correctAnswer = state.questions[targetIdx].answer;
+            const isCorrect = userAnswer === correctAnswer;
+
+            if (isCorrect) {
+                state.isWaiting = false;
+                state.score += 10 + state.difficulty * 2;
+                state.correctCount++;
+                showFeedback(true, correctAnswer);
+                revealAnswer();
+
+                state.displayTimeout = setTimeout(() => {
+                    if (state.isGameActive) {
+                        elements.feedback.classList.remove('show');
+                        displayNextQuestion();
+                    }
+                }, 1000);
+            } else {
+                elements.answerInput.value = '';
+            }
+        }
+
+        function checkInput() {
+            if (!state.isGameActive || !state.isWaiting) return;
+            const userAnswer = parseInt(elements.answerInput.value);
+            if (isNaN(userAnswer) || userAnswer < 0) return;
+
+            const targetIdx = state.currentIndex - state.difficulty;
+            if (userAnswer === state.questions[targetIdx].answer) {
+                handleSubmit();
+            }
+        }
+
+        function startGame() {
+            state.questions = [];
+            state.currentIndex = -1;
+            state.score = 0;
+            state.correctCount = 0;
+            state.answeredCount = 0;
+            state.timeRemaining = GAME_DURATION;
+            state.isGameActive = true;
+            state.isWaiting = false;
+
+            elements.difficultyBadge.textContent = `${state.difficulty} 溯答`;
+            elements.timerDisplay.textContent = formatTime(state.timeRemaining);
+            elements.timerDisplay.classList.remove('warning');
+            elements.feedback.classList.remove('show');
+
+            switchScreen('game');
+            startTimer();
+            displayNextQuestion();
+        }
+
+        function endGame() {
+            state.isGameActive = false;
+            stopTimer();
+            stopDisplayTimeout();
+
+            const { difficulty, questions, answeredCount, correctCount, score } = state;
+
+            if (correctCount >= answeredCount * 0.9) {
+                elements.resultIcon.textContent = '🏆';
+                elements.resultTitle.textContent = '太厉害了！';
+            } else if (correctCount >= answeredCount * 0.7) {
+                elements.resultIcon.textContent = '🎉';
+                elements.resultTitle.textContent = '做得好！';
+            } else if (correctCount >= answeredCount * 0.5) {
+                elements.resultIcon.textContent = '💪';
+                elements.resultTitle.textContent = '不错的尝试！';
+            } else {
+                elements.resultIcon.textContent = '🤔';
+                elements.resultTitle.textContent = '继续加油！';
+            }
+
+            elements.resultDifficulty.textContent = `${difficulty} 溯答`;
+            elements.resultTotal.textContent = `${questions.length} 题`;
+            elements.resultAnswered.textContent = `${answeredCount} 题`;
+            elements.resultCorrect.textContent = `${correctCount} 题`;
+            elements.resultScore.textContent = `${score} 分`;
+
+            switchScreen('result');
+        }
+
+        // Event Listeners
+        elements.startBtn.addEventListener('click', () => {
+            const val = parseInt(elements.difficultyInput.value);
+            if (val >= 1 && val <= 99) {
+                state.difficulty = val;
+                startGame();
+            }
+        });
+
+        elements.submitBtn.addEventListener('click', handleSubmit);
+        elements.answerInput.addEventListener('input', checkInput);
+        elements.answerInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') handleSubmit();
+        });
+
+        elements.playAgainBtn.addEventListener('click', startGame);
+        elements.backBtn.addEventListener('click', () => {
+            stopTimer();
+            stopDisplayTimeout();
+            switchScreen('menu');
+        });
+    </script>
+</body>
+</html>
